@@ -80,6 +80,7 @@
             margin-top: 10px;
         }
     </style>
+
 </head>
 <body>
     <div class="container">
@@ -142,17 +143,33 @@
             const day = nationalId.substring(5, 7); // اليوم
             const governorateCode = nationalId.substring(7, 9); // كود المحافظة
             const registrationNumber = nationalId.substring(9, 13); // رقم التسجيل المدني
-            const birthTypeDigit = parseInt(nationalId[12], 10); // الرقم قبل الأخير
-            const genderDigit = parseInt(nationalId[13], 10); // الرقم الأخير
+            const birthTypeDigit = parseInt(nationalId[12], 10); // الرقم الثالث عشر
+            const genderDigit = parseInt(nationalId[13], 10); // الرقم الرابع عشر
 
             // تحديد الجنس
-            const gender = genderDigit % 2 === 1 ? "أنثى" : "ذكر";
+            const gender = birthTypeDigit % 2 === 0 ? "أنثى" : "ذكر";
 
-            // تحديد نوع الميلاد
-            const birthType = birthTypeDigit === 2 || birthTypeDigit === 4 ? "غير طبيعي (ربما توأم)" : "طبيعي";
 
             // تحديد اسم المحافظة
             const governorateName = governorates[governorateCode] || "غير معروفة";
+
+            // حساب العمر
+            const today = new Date();
+            const birthDate = new Date(`${century}${year}-${month}-${day}`);
+            let ageYears = today.getFullYear() - birthDate.getFullYear();
+            let ageMonths = today.getMonth() - birthDate.getMonth();
+            let ageDays = today.getDate() - birthDate.getDate();
+
+            // تعديل العمر إذا كان الشهر أو اليوم غير مكتمل
+            if (ageDays < 0) {
+                ageMonths--;
+                const lastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+                ageDays += lastMonth.getDate();
+            }
+            if (ageMonths < 0) {
+                ageYears--;
+                ageMonths += 12;
+            }
 
             // عرض النتائج باستخدام كروت
             outputDiv.innerHTML = `
@@ -167,9 +184,9 @@
                         <p><span class="highlight">تاريخ الميلاد:</span> ${day}-${month}-${century}${year}</p>
                     </div>
 
-                    <!-- كرت نوع الميلاد -->
+                    <!-- كرت العمر -->
                     <div class="card">
-                        <p><span class="highlight">نوع الميلاد:</span> ${birthType}</p>
+                        <p><span class="highlight">العمر:</span> ${ageYears} سنة و${ageMonths} شهر و${ageDays} يوم</p>
                     </div>
 
                     <!-- كرت المحافظة -->
