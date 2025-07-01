@@ -230,7 +230,7 @@
         </table>`;
       const wrapper = document.createElement("div");
       wrapper.innerHTML = tableHTML;
-      html2pdf().from(wrapper).save(`${currentNationalId || "تحليل_الرقم_القومي"}.pdf`);
+      html2pdf().from(wrapper).save(`${currentNationalId ||}.pdf`);
     }
 
     function shareOnWhatsApp() {
