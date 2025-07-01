@@ -72,12 +72,13 @@
       background-color: #ffffff;
       border: 1px solid #007bff;
       border-radius: 12px;
-      box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
       padding: 20px;
       margin: 10px 0;
       width: 100%;
       text-align: right;
       font-weight: bold;
+      transform: perspective(1000px) rotateX(0deg);
     }
     body.dark-mode .card {
       background-color: #2a2a2a;
@@ -108,6 +109,10 @@
     }
     .pdf-header span {
       display: block;
+    }
+    table td {
+      font-size: 16px;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -220,7 +225,7 @@
     function copyResult() {
       const outputDiv = document.getElementById("output");
       const now = new Date();
-      const text = `الرقم القومي : ${currentNationalId}\nتاريخ التحليل : ${now.toLocaleDateString()} - ${now.toLocaleTimeString()}\n\n${outputDiv.innerText}`;
+      const text = `الرقم القومي: ${currentNationalId}\nتاريخ التحليل: ${now.toLocaleDateString()} - ${now.toLocaleTimeString()}\n\n${outputDiv.innerText}`;
       navigator.clipboard.writeText(text).then(() => {
         alert("✅ تم نسخ النتائج بنجاح!");
       });
@@ -233,10 +238,8 @@
       const timeStr = now.toLocaleTimeString();
       const tableHTML = `
         <div class="pdf-header">
-          <span>الرقم القومي :\n ${currentNationalId}</span>
-          <span>تاريخ التحليل :\n
-           ${dateStr} - ${timeStr}
-          </span>
+          <span>الرقم القومي: ${currentNationalId}</span>
+          <span>تاريخ التحليل: ${dateStr} - ${timeStr}</span>
         </div>
         <table dir="rtl" border="1" cellpadding="10" style="width:100%; font-family:'Tajawal', sans-serif; text-align:right; border-collapse: collapse;">
           ${Array.from(outputDiv.querySelectorAll('.card')).map(card => `<tr><td>${card.innerText.replace(':', '</td><td>')}</td></tr>`).join('')}
@@ -249,7 +252,7 @@
     function shareOnWhatsApp() {
       const outputDiv = document.getElementById("output");
       const now = new Date();
-      const text = `الرقم القومي : ${currentNationalId}\nتاريخ التحليل : ${now.toLocaleDateString()} - ${now.toLocaleTimeString()}\n\n${outputDiv.innerText}`;
+      const text = `الرقم القومي: ${currentNationalId}\nتاريخ التحليل: ${now.toLocaleDateString()} - ${now.toLocaleTimeString()}\n\n${outputDiv.innerText}`;
       const encodedText = encodeURIComponent(text);
       const url = `https://wa.me/?text=${encodedText}`;
       window.open(url, '_blank');
