@@ -127,8 +127,11 @@
       "33": "مطروح", "34": "شمال سيناء", "35": "جنوب سيناء", "88": "خارج الجمهورية"
     };
 
+    let currentNationalId = "";
+
     function decodeNationalId() {
       const nationalId = document.getElementById("nationalId").value.trim();
+      currentNationalId = nationalId;
       const outputDiv = document.getElementById("output");
       outputDiv.innerHTML = "";
 
@@ -215,13 +218,19 @@
     }
 
     function downloadPDF() {
-      const element = document.getElementById("output");
-      const tableHTML = `<table dir="rtl" border="1" cellpadding="10" style="width:100%; font-family:'Tajawal', sans-serif; text-align:right;">
-        ${Array.from(element.querySelectorAll('.card')).map(card => `<tr><td>${card.innerText.replace(':', '</td><td>')}</td></tr>`).join('')}
-      </table>`;
+      const outputDiv = document.getElementById("output");
+      const now = new Date();
+      const dateStr = now.toLocaleDateString();
+      const timeStr = now.toLocaleTimeString();
+      const tableHTML = `
+        <h2>الرقم القومي: ${currentNationalId}</h2>
+        <p>تاريخ التحليل: ${dateStr} - ${timeStr}</p>
+        <table dir="rtl" border="1" cellpadding="10" style="width:100%; font-family:'Tajawal', sans-serif; text-align:right; border-collapse: collapse;">
+          ${Array.from(outputDiv.querySelectorAll('.card')).map(card => `<tr><td>${card.innerText.replace(':', '</td><td>')}</td></tr>`).join('')}
+        </table>`;
       const wrapper = document.createElement("div");
       wrapper.innerHTML = tableHTML;
-      html2pdf().from(wrapper).save("تحليل_الرقم_القومي.pdf");
+      html2pdf().from(wrapper).save(`${currentNationalId || "تحليل_الرقم_القومي"}.pdf`);
     }
 
     function shareOnWhatsApp() {
