@@ -4,35 +4,36 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>تحليل الرقم القومي المصري</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     body {
       font-family: 'Tajawal', sans-serif;
-      background-color: #f9f9f9;
+      background-color: #eef3f8;
       margin: 0;
       padding: 20px;
       color: #333;
       direction: rtl;
     }
     .container {
-      max-width: 500px;
+      max-width: 600px;
       margin: auto;
       background: #fff;
-      padding: 40px;
+      padding: 40px 30px;
       border-radius: 16px;
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
       text-align: center;
     }
     h1 {
-      font-size: 28px;
+      font-size: 30px;
       color: #007bff;
-      margin-bottom: 20px;
+      margin-bottom: 25px;
     }
     input {
       width: 100%;
-      padding: 10px;
-      margin: 10px -10px;
+      padding: 12px;
+      margin: 12px 0;
       border: 2px solid #007bff;
-      border-radius: 25px;
+      border-radius: 30px;
       font-size: 18px;
       text-align: center;
     }
@@ -42,9 +43,10 @@
       background-color: #007bff;
       color: white;
       border: none;
-      border-radius: 10px;
-      font-size: 20px;
+      border-radius: 12px;
+      font-size: 18px;
       cursor: pointer;
+      margin-top: 10px;
       transition: background-color 0.3s ease;
     }
     button:hover {
@@ -57,9 +59,9 @@
       align-items: center;
     }
     .card {
-      background-color: #e9f7ef;
+      background-color: #f0f9ff;
       border-radius: 12px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
       padding: 20px;
       margin: 10px 0;
       text-align: center;
@@ -84,7 +86,10 @@
   <div class="container">
     <h1>تحليل الرقم القومي المصري</h1>
     <input type="text" id="nationalId" placeholder="أدخل الرقم القومي (14 رقمًا)" maxlength="14" />
-    <button onclick="decodeNationalId()">تحليل</button>
+    <button onclick="decodeNationalId()">🔍 تحليل</button>
+    <button onclick="copyResult()">📋 نسخ النتائج</button>
+    <button onclick="downloadPDF()">📄 تحميل PDF</button>
+    <button onclick="shareOnWhatsApp()">📤 مشاركة على واتساب</button>
     <div id="output"></div>
   </div>
 
@@ -99,6 +104,30 @@
       "33": "مطروح", "34": "شمال سيناء", "35": "جنوب سيناء", "88": "خارج الجمهورية"
     };
 
+    function getZodiac(day, month) {
+      const signs = [
+        ["الجدي", 20], ["الدلو", 19], ["الحوت", 20],
+        ["الحمل", 20], ["الثور", 21], ["الجوزاء", 21],
+        ["السرطان", 23], ["الأسد", 23], ["العذراء", 23],
+        ["الميزان", 23], ["العقرب", 22], ["القوس", 22]
+      ];
+      return day < signs[month - 1][1] ? signs[(month + 10) % 12][0] : signs[month - 1][0];
+    }
+
+    function validateLuhn(id) {
+      let sum = 0;
+      for (let i = 0; i < 13; i++) {
+        let digit = parseInt(id[i], 10);
+        if (i % 2 === 0) {
+          digit *= 2;
+          if (digit > 9) digit -= 9;
+        }
+        sum += digit;
+      }
+      let checkDigit = (10 - (sum % 10)) % 10;
+      return checkDigit === parseInt(id[13], 10);
+    }
+
     function decodeNationalId() {
       const nationalId = document.getElementById("nationalId").value.trim();
       const outputDiv = document.getElementById("output");
@@ -109,6 +138,7 @@
         return;
       }
 
+      const isValid = validateLuhn(nationalId);
       const century = nationalId[0] === "2" ? "19" : "20";
       const year = nationalId.substring(1, 3);
       const month = nationalId.substring(3, 5);
@@ -119,7 +149,6 @@
       const gender = birthTypeDigit % 2 === 0 ? "أنثى" : "ذكر";
       const governorateName = governorates[governorateCode] || "غير معروفة";
 
-      // تحديد الجيل بدقة
       let generation = "غير محدد";
       const numericYear = parseInt(year, 10);
       if (century === "19") {
@@ -127,9 +156,9 @@
         else if (numericYear >= 80 && numericYear <= 89) generation = "مواليد الثمانينات";
         else if (numericYear >= 90 && numericYear <= 99) generation = "مواليد التسعينات";
       } else if (century === "20") {
-        if (numericYear >= 0 && numericYear <= 9) generation = "مواليد الألفينات";
-        else if (numericYear >= 10 && numericYear <= 19) generation = "مواليد العشرينات";
-        else if (numericYear >= 20 && numericYear <= 29) generation = "مواليد الثلاثينات";
+        if (numericYear <= 9) generation = "مواليد الألفينات";
+        else if (numericYear <= 19) generation = "مواليد العشرينات";
+        else if (numericYear <= 29) generation = "مواليد الثلاثينات";
       }
 
       const today = new Date();
@@ -148,7 +177,6 @@
         ageMonths += 12;
       }
 
-      // تحديد الفئة العمرية
       let ageCategory = "غير محدد";
       if (ageYears < 12) ageCategory = "طفل";
       else if (ageYears < 18) ageCategory = "مراهق";
@@ -156,31 +184,42 @@
       else if (ageYears < 60) ageCategory = "بالغ";
       else ageCategory = "كبير السن";
 
+      const birthDayName = birthDate.toLocaleDateString("ar-EG", { weekday: "long" });
+      const zodiacSign = getZodiac(parseInt(day), parseInt(month));
+
       outputDiv.innerHTML = `
         <div class="result-container">
-          <div class="card">
-            <p><span class="highlight">الجيل:</span> ${generation}</p>
-          </div>
-          <div class="card">
-            <p><span class="highlight">الفئة العمرية:</span> ${ageCategory}</p>
-          </div>
-          <div class="card">
-            <p><span class="highlight">الجنس:</span> ${gender}</p>
-          </div>
-          <div class="card">
-            <p><span class="highlight">تاريخ الميلاد:</span> ${day}-${month}-${century}${year}</p>
-          </div>
-          <div class="card">
-            <p><span class="highlight">العمر:</span> ${ageYears} سنة و${ageMonths} شهر و${ageDays} يوم</p>
-          </div>
-          <div class="card">
-            <p><span class="highlight">المحافظة:</span> ${governorateName}</p>
-          </div>
-          <div class="card">
-            <p><span class="highlight">رقم التسجيل المدني:</span> ${registrationNumber}</p>
-          </div>
+          <div class="card"><p><span class="highlight">صلاحية الرقم القومي:</span> ${isValid ? "✅ صالح" : "❌ غير صالح (مزيف)"}</p></div>
+          <div class="card"><p><span class="highlight">الجيل:</span> ${generation}</p></div>
+          <div class="card"><p><span class="highlight">الفئة العمرية:</span> ${ageCategory}</p></div>
+          <div class="card"><p><span class="highlight">الجنس:</span> ${gender}</p></div>
+          <div class="card"><p><span class="highlight">تاريخ الميلاد:</span> ${day}-${month}-${century}${year}</p></div>
+          <div class="card"><p><span class="highlight">يوم الميلاد:</span> ${birthDayName}</p></div>
+          <div class="card"><p><span class="highlight">البرج الفلكي:</span> ${zodiacSign}</p></div>
+          <div class="card"><p><span class="highlight">العمر:</span> ${ageYears} سنة و${ageMonths} شهر و${ageDays} يوم</p></div>
+          <div class="card"><p><span class="highlight">المحافظة:</span> ${governorateName}</p></div>
+          <div class="card"><p><span class="highlight">رقم التسجيل المدني:</span> ${registrationNumber}</p></div>
         </div>
       `;
+    }
+
+    function copyResult() {
+      const text = document.getElementById("output").innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        alert("✅ تم نسخ النتائج بنجاح!");
+      });
+    }
+
+    function downloadPDF() {
+      const element = document.getElementById("output");
+      html2pdf().from(element).save("تحليل_الرقم_القومي.pdf");
+    }
+
+    function shareOnWhatsApp() {
+      const text = document.getElementById("output").innerText;
+      const encodedText = encodeURIComponent(text);
+      const url = `https://wa.me/?text=${encodedText}`;
+      window.open(url, '_blank');
     }
   </script>
 </body>
