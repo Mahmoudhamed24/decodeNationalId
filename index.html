@@ -72,7 +72,7 @@
       background-color: #ffffff;
       border: 1px solid #007bff;
       border-radius: 12px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.2);
       padding: 20px;
       margin: 10px 0;
       width: 100%;
@@ -211,7 +211,9 @@
     }
 
     function copyResult() {
-      const text = document.getElementById("output").innerText;
+      const outputDiv = document.getElementById("output");
+      const now = new Date();
+      const text = `الرقم القومي: ${currentNationalId}\nتاريخ التحليل: ${now.toLocaleDateString()} - ${now.toLocaleTimeString()}\n\n${outputDiv.innerText}`;
       navigator.clipboard.writeText(text).then(() => {
         alert("✅ تم نسخ النتائج بنجاح!");
       });
@@ -230,11 +232,13 @@
         </table>`;
       const wrapper = document.createElement("div");
       wrapper.innerHTML = tableHTML;
-      html2pdf().from(wrapper).save(`${currentNationalId ||}.pdf`);
+      html2pdf().from(wrapper).save(`${currentNationalId || "تحليل_الرقم_القومي"}.pdf`);
     }
 
     function shareOnWhatsApp() {
-      const text = document.getElementById("output").innerText;
+      const outputDiv = document.getElementById("output");
+      const now = new Date();
+      const text = `الرقم القومي: ${currentNationalId}\nتاريخ التحليل: ${now.toLocaleDateString()} - ${now.toLocaleTimeString()}\n\n${outputDiv.innerText}`;
       const encodedText = encodeURIComponent(text);
       const url = `https://wa.me/?text=${encodedText}`;
       window.open(url, '_blank');
