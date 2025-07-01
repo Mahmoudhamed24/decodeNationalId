@@ -82,14 +82,12 @@
     body.dark-mode .card {
       background-color: #2a2a2a;
     }
-    .card:nth-child(1) { background-color: #ffebee; }
-    .card:nth-child(2) { background-color: #e3f2fd; }
-    .card:nth-child(3) { background-color: #e8f5e9; }
-    .card:nth-child(4) { background-color: #fff8e1; }
-    .card:nth-child(5) { background-color: #ede7f6; }
-    .card:nth-child(6) { background-color: #f3e5f5; }
-    .card:nth-child(7) { background-color: #e0f2f1; }
-    .card:nth-child(8) { background-color: #fbe9e7; }
+    .card:nth-child(odd) {
+      background-color: #e0f7fa;
+    }
+    .card:nth-child(even) {
+      background-color: #fce4ec;
+    }
     .card p {
       margin: 8px 0;
       font-size: 16px;
@@ -101,6 +99,15 @@
       color: red;
       font-size: 18px;
       margin-top: 10px;
+    }
+    .pdf-header {
+      font-size: 20px;
+      margin-bottom: 20px;
+      text-align: right;
+      font-weight: bold;
+    }
+    .pdf-header span {
+      display: block;
     }
   </style>
 </head>
@@ -225,8 +232,10 @@
       const dateStr = now.toLocaleDateString();
       const timeStr = now.toLocaleTimeString();
       const tableHTML = `
-        <h2>الرقم القومي: ${currentNationalId}</h2>
-        <p>تاريخ التحليل: ${dateStr} - ${timeStr}</p>
+        <div class="pdf-header">
+          <span>الرقم القومي: ${currentNationalId}</span>
+          <span>تاريخ التحليل: ${dateStr} - ${timeStr}</span>
+        </div>
         <table dir="rtl" border="1" cellpadding="10" style="width:100%; font-family:'Tajawal', sans-serif; text-align:right; border-collapse: collapse;">
           ${Array.from(outputDiv.querySelectorAll('.card')).map(card => `<tr><td>${card.innerText.replace(':', '</td><td>')}</td></tr>`).join('')}
         </table>`;
