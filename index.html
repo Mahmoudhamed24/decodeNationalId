@@ -110,9 +110,21 @@
     .pdf-header span {
       display: block;
     }
-    table td {
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      font-family: 'Tajawal', sans-serif;
+    }
+    table td, table th {
+      border: 1px solid #000;
+      padding: 10px;
       font-size: 16px;
       font-weight: bold;
+      text-align: right;
+    }
+    table th {
+      background-color: #007bff;
+      color: #fff;
     }
   </style>
 </head>
@@ -241,8 +253,11 @@
           <span>الرقم القومي: ${currentNationalId}</span>
           <span>تاريخ التحليل: ${dateStr} - ${timeStr}</span>
         </div>
-        <table dir="rtl" border="1" cellpadding="10" style="width:100%; font-family:'Tajawal', sans-serif; text-align:right; border-collapse: collapse;">
-          ${Array.from(outputDiv.querySelectorAll('.card')).map(card => `<tr><td>${card.innerText.replace(':', '</td><td>')}</td></tr>`).join('')}
+        <table dir="rtl">
+          <thead><tr><th>العنصر</th><th>القيمة</th></tr></thead>
+          <tbody>
+            ${Array.from(outputDiv.querySelectorAll('.card')).map(card => `<tr><td>${card.innerText.split(':')[0]}</td><td>${card.innerText.split(':')[1]}</td></tr>`).join('')}
+          </tbody>
         </table>`;
       const wrapper = document.createElement("div");
       wrapper.innerHTML = tableHTML;
