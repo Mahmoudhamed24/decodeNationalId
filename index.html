@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>تحليل الرقم القومي المصري</title>
+  <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" type="image/png">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     body {
@@ -13,6 +14,11 @@
       padding: 20px;
       color: #333;
       direction: rtl;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    body.dark-mode {
+      background-color: #121212;
+      color: #f1f1f1;
     }
     .container {
       max-width: 600px;
@@ -21,12 +27,16 @@
       padding: 40px 30px;
       border-radius: 16px;
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-      text-align: center;
+      text-align: right;
+    }
+    body.dark-mode .container {
+      background: #1e1e1e;
     }
     h1 {
       font-size: 30px;
       color: #007bff;
       margin-bottom: 25px;
+      text-align: right;
     }
     input {
       width: 100%;
@@ -56,23 +66,33 @@
       margin-top: 30px;
       display: flex;
       flex-direction: column;
-      align-items: center;
+      align-items: flex-end;
     }
     .card {
-      background-color: #f0f9ff;
+      background-color: #ffffff;
+      border: 1px solid #007bff;
       border-radius: 12px;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
       padding: 20px;
       margin: 10px 0;
-      text-align: center;
       width: 100%;
+      text-align: right;
+      font-weight: bold;
+    }
+    body.dark-mode .card {
+      background-color: #2a2a2a;
+    }
+    .card:nth-child(odd) {
+      background-color: #e0f7fa;
+    }
+    .card:nth-child(even) {
+      background-color: #fff3e0;
     }
     .card p {
       margin: 8px 0;
       font-size: 16px;
     }
     .highlight {
-      font-weight: bold;
       color: #007bff;
     }
     .error {
@@ -90,6 +110,7 @@
     <button onclick="copyResult()">📋 نسخ النتائج</button>
     <button onclick="downloadPDF()">📄 تحميل PDF</button>
     <button onclick="shareOnWhatsApp()">📤 مشاركة على واتساب</button>
+    <button onclick="toggleDarkMode()">🌙 تبديل الوضع الليلي</button>
     <div id="output"></div>
   </div>
 
@@ -104,21 +125,11 @@
       "33": "مطروح", "34": "شمال سيناء", "35": "جنوب سيناء", "88": "خارج الجمهورية"
     };
 
-    function getZodiac(day, month) {
-      const signs = [
-        ["الجدي", 20], ["الدلو", 19], ["الحوت", 20],
-        ["الحمل", 20], ["الثور", 21], ["الجوزاء", 21],
-        ["السرطان", 23], ["الأسد", 23], ["العذراء", 23],
-        ["الميزان", 23], ["العقرب", 22], ["القوس", 22]
-      ];
-      return day < signs[month - 1][1] ? signs[(month + 10) % 12][0] : signs[month - 1][0];
-    }
-
     function validateLuhn(id) {
       let sum = 0;
       for (let i = 0; i < 13; i++) {
         let digit = parseInt(id[i], 10);
-        if (i % 2 === 0) {
+        if ((i + 1) % 2 === 0) {
           digit *= 2;
           if (digit > 9) digit -= 9;
         }
@@ -149,6 +160,12 @@
       const gender = birthTypeDigit % 2 === 0 ? "أنثى" : "ذكر";
       const governorateName = governorates[governorateCode] || "غير معروفة";
 
+      const birthDate = new Date(`${century}${year}-${month}-${day}`);
+      if (birthDate == "Invalid Date") {
+        outputDiv.innerHTML = '<div class="error">⚠️ تاريخ ميلاد غير صالح في الرقم القومي.</div>';
+        return;
+      }
+
       let generation = "غير محدد";
       const numericYear = parseInt(year, 10);
       if (century === "19") {
@@ -162,7 +179,6 @@
       }
 
       const today = new Date();
-      const birthDate = new Date(`${century}${year}-${month}-${day}`);
       let ageYears = today.getFullYear() - birthDate.getFullYear();
       let ageMonths = today.getMonth() - birthDate.getMonth();
       let ageDays = today.getDate() - birthDate.getDate();
@@ -184,23 +200,25 @@
       else if (ageYears < 60) ageCategory = "بالغ";
       else ageCategory = "كبير السن";
 
-      const birthDayName = birthDate.toLocaleDateString("ar-EG", { weekday: "long" });
-      const zodiacSign = getZodiac(parseInt(day), parseInt(month));
+      const fields = [
+        ["صلاحية الرقم القومي", isValid ? "صالح" : "غير صالح"],
+        ["الجيل", generation],
+        ["الفئة العمرية", ageCategory],
+        ["الجنس", gender],
+        ["تاريخ الميلاد", `${day}-${month}-${century}${year}`],
+        ["العمر", `${ageYears} سنة و${ageMonths} شهر و${ageDays} يوم`],
+        ["المحافظة", governorateName],
+        ["رقم التسجيل المدني", registrationNumber]
+      ];
 
-      outputDiv.innerHTML = `
-        <div class="result-container">
-          <div class="card"><p><span class="highlight">صلاحية الرقم القومي:</span> ${isValid ? "✅ صالح" : "❌ غير صالح (مزيف)"}</p></div>
-          <div class="card"><p><span class="highlight">الجيل:</span> ${generation}</p></div>
-          <div class="card"><p><span class="highlight">الفئة العمرية:</span> ${ageCategory}</p></div>
-          <div class="card"><p><span class="highlight">الجنس:</span> ${gender}</p></div>
-          <div class="card"><p><span class="highlight">تاريخ الميلاد:</span> ${day}-${month}-${century}${year}</p></div>
-          <div class="card"><p><span class="highlight">يوم الميلاد:</span> ${birthDayName}</p></div>
-          <div class="card"><p><span class="highlight">البرج الفلكي:</span> ${zodiacSign}</p></div>
-          <div class="card"><p><span class="highlight">العمر:</span> ${ageYears} سنة و${ageMonths} شهر و${ageDays} يوم</p></div>
-          <div class="card"><p><span class="highlight">المحافظة:</span> ${governorateName}</p></div>
-          <div class="card"><p><span class="highlight">رقم التسجيل المدني:</span> ${registrationNumber}</p></div>
-        </div>
-      `;
+      outputDiv.innerHTML = fields.map(([label, value]) => `
+        <div class="card">
+          <p><span class="highlight">${label}:</span> ${value}</p>
+        </div>`).join('');
+    }
+
+    function toggleDarkMode() {
+      document.body.classList.toggle("dark-mode");
     }
 
     function copyResult() {
@@ -212,7 +230,12 @@
 
     function downloadPDF() {
       const element = document.getElementById("output");
-      html2pdf().from(element).save("تحليل_الرقم_القومي.pdf");
+      const tableHTML = `<table dir="rtl" border="1" cellpadding="10" style="width:100%; font-family:'Tajawal', sans-serif; text-align:right;">
+        ${Array.from(element.querySelectorAll('.card')).map(card => `<tr><td>${card.innerText.replace(':', '</td><td>')}</td></tr>`).join('')}
+      </table>`;
+      const wrapper = document.createElement("div");
+      wrapper.innerHTML = tableHTML;
+      html2pdf().from(wrapper).save("تحليل_الرقم_القومي.pdf");
     }
 
     function shareOnWhatsApp() {
